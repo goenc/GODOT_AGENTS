@@ -7,6 +7,7 @@
 ## 基本方針
 - 実装は最小変更に限定する
 - 実装範囲外の code と設定を変更しない
+- Godot 2D game の実装判断は `skills/godot/godot_2d_development_practices.md` を正とする
 - 調査切替と外部情報採用は `skills/implementation_research_policy.md` を正とする
 - 新規 file 配置と既存構成準拠は `skills/initial_structure_compliance.md` を正とする
 
