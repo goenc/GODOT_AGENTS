@@ -35,6 +35,7 @@
 - 補助用の非表示 node や一時内部オブジェクトが必要な場合でも、既存構成で代替できるなら新規生成しない
 
 ## UI 実装
+- UI、HUD、menu、dialog、CanvasLayer、Control、viewport、camera、画面構成に関わる変更では `skills/godot/godot_ui_canvas_layout.md` を正とする
 - UI は Godot Editor の Inspector 調整前提で構築する
 - UI レイアウト初期値の正本は scene と Inspector とする
 - 以下のプロパティを script から固定代入で上書きしない

@@ -16,3 +16,4 @@
 - `skills/godot/godot_tilemaplayer_stage_editing.md` : TileMapLayer 地形編集規則
 - `skills/godot/physics_signal_rules.md` : 物理 signal deferred 規則
 - `skills/godot/godot_executable_path.md` : Godot 実行 command 規則
+- `skills/godot/godot_ui_canvas_layout.md` : UI、CanvasLayer、画面構成、Container 禁止規則
