@@ -1,0 +1,6 @@
+interface:
+  display_name: "GitHub正本の変更完了"
+  short_description: "mainを同期し変更をcommitとpushまで完了"
+  default_prompt: "$repository-change-workflow を使い、変更を検証して日本語commit、push、remote SHA照合まで完了する。"
+policy:
+  allow_implicit_invocation: true

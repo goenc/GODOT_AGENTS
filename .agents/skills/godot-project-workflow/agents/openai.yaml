@@ -1,0 +1,6 @@
+interface:
+  display_name: "Godotプロジェクト開発"
+  short_description: "Godotのsceneとscriptを最小変更で実装検証"
+  default_prompt: "$godot-project-workflow を使い、既存構成を維持して必要なGodot変更だけを実装し検証する。"
+policy:
+  allow_implicit_invocation: true
