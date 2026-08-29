@@ -1,6 +1,6 @@
 ---
 name: godot-project-workflow
-description: Godot projectのGDScript、C#、scene、resource、UI、physics、TileMapLayer、project設定、import、test、buildを調査または変更する。Gitだけの操作やGodot以外のrepositoryには使用しない。
+description: Godot projectのGDScript、C#、scene、resource、UI、physics、TileMapLayer、project設定、import、test、buildを調査または変更する。GodotのC#または.NET taskではcsharp-project-workflowも併用する。Gitだけの操作やGodot以外のrepositoryには使用しない。
 ---
 
 # Godot Project Workflow
@@ -27,6 +27,7 @@ Godot versionは既存projectの宣言と実測を優先する。別目的のtas
 - 静的grid地形、`TileSet`、`TileMapLayer`を扱う場合は [tilemap.md](references/tilemap.md)。
 - project本体を変更して検証commandを選ぶ場合は [build-and-test.md](references/build-and-test.md)。
 - Godot仕様、外部dependency、addon、環境差、未確認APIの調査が必要な場合は [research.md](references/research.md)。
+- GodotのC#、`.csproj`、.NET、NuGet、C# testを扱う場合は `csharp-project-workflow` とその必要なreferenceも併用する。
 
 ## 実装原則
 

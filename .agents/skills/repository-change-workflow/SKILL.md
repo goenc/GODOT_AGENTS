@@ -1,24 +1,27 @@
 ---
 name: repository-change-workflow
-description: Git管理リポジトリのファイル追加・変更・移動・削除を、安全確認、検証、日本語commit、origin/mainへのpush、remote SHA照合まで完了する。読み取り専用調査やGit管理外の一時出力だけには使用しない。
+description: Git管理リポジトリのファイル追加・変更・移動・削除を、安全確認、最小検証、日本語commit、明示許可時のpush、remote SHA照合まで完了する。読み取り専用調査やGit管理外の一時出力だけには使用しない。
 ---
 
 # Repository Change Workflow
 
-GitHubの `origin/main` を共有済み状態の正本とし、複数端末のlocal copyを安全に同期する。
+Git管理対象の変更を、安全確認から必要なremote反映まで一続きで完了する。
+
+## 適用条件
+
+- Git管理対象の追加、変更、移動、削除に使用する。
+- 読み取り専用の調査には使用しない。
+- commit、push、network、workspace外writeは、現在taskで必要かつ利用者が明示的に許可した場合だけ行う。
 
 ## 開始
 
 1. 対象repositoryと変更目的を確定する。
-2. 最初のGit操作として `git status --short --branch` を実行する。
+2. 編集前に最初に `git status --short --branch` を実行する。
 3. `git branch --show-current`、`git remote -v`、upstream、merge/rebase/bisect等の進行状態を確認する。
-4. `origin` が対象repositoryを指し、`origin/main` が存在し、現在branchが `main` であることを確認する。
-5. 未commit変更、未追跡file、競合、進行中operationがある場合は、利用者の作業を保持して停止する。
-6. 利用者が既存差分を今回taskの入力として明示し、処置を許可した場合だけ、そのfileを含めるか個別にignoreするかを確定して続行してよい。
-7. 安全確認後に `git fetch origin main` を実行する。local `main` がbehindなら `git merge --ff-only origin/main` だけを許可する。
-8. fast-forwardできない、localとremoteが分岐している、remoteを確認できない場合は、自動merge、rebase、reset、restore、clean、stashを行わず停止する。
-
-実装、`AGENTS.md`、skill変更では、source調査前に現在ユーザーのprofile配下 `.codex/runtime/agent_event_start.md` をUTF-8、LF、自然文2行で上書きする。1行目は要求理解、2行目は次行動。親directoryがなければ一度だけ作成を試す。
+4. 適用中のAGENTS、repository設定、利用者の依頼から正本remoteとbranchを確定する。`origin/main`や`main`を推測で固定しない。
+5. 未commit変更、未追跡file、競合、進行中operationがある場合は、利用者の作業を保持したまま原則停止する。利用者が既存差分を今回taskの入力として明示し、安全にpathを分離できる場合だけ限定して続行する。
+6. remote操作が必要でcleanな場合だけ、確定したremoteとbranchをfetchする。behindならfast-forwardだけで更新し、分岐時は停止する。
+7. pull、reset、restore、clean、stash、merge、rebase、force pushを自動実行しない。
 
 ## 変更
 
@@ -27,6 +30,7 @@ GitHubの `origin/main` を共有済み状態の正本とし、複数端末のlo
 - 同一fileに無関係な既存hunkがある場合は、今回hunkだけを編集してstageする。安全に分離できなければ停止する。
 - 最小差分を維持し、対象外の整形、改名、依存更新、refactorを行わない。
 - 既存変更を破棄、隠蔽、上書きしない。stashを端末間引き継ぎに使わない。
+- 固定共有のruntime通知fileを、通常の変更手順でworkspace外へ上書きしない。
 
 ## 検証
 
@@ -38,10 +42,9 @@ GitHubの `origin/main` を共有済み状態の正本とし、複数端末のlo
 ## Commit
 
 1. 今回変更したpathだけを `git add -A -- <path...>` でstageする。
-2. `git diff --staged --name-status`、`git diff --staged --check`、`git diff --staged` を確認する。
+2. `git diff --staged --name-status`、`git diff --staged --check`、`git diff --staged`を確認する。
 3. stage対象がなければ空commitを作らない。
-4. 現在ユーザーのprofile配下 `.codex/runtime/commit_message.md` をUTF-8、LF、末尾改行ありで上書きする。
-5. commit messageは次の日本語形式とする。
+4. commit messageは次の日本語形式とする。
 
 ```text
 変更内容が分かる短いタイトル
@@ -56,33 +59,19 @@ GitHubの `origin/main` を共有済み状態の正本とし、複数端末のlo
 実行した確認と結果
 ```
 
-6. `git commit -F <commit-message-path>` を実行する。
+5. task固有の安全なmessage fileまたは `git commit -m` を使用してcommitする。共有profile配下の固定message fileを上書きしない。
 
 ## Pushと照合
 
-1. `git push origin main` を実行する。通常開発で別branchへpushしない。
-2. dirty状態のpush、force push、rebase、履歴書換えを行わない。
-3. push失敗時は認証、network、non-fast-forwardを切り分け、安全に修正できる場合だけ一度再試行する。
-4. remote先行や分岐の場合は自動pull、merge、rebase、resetを行わず停止する。
-5. `git rev-parse HEAD` と `git ls-remote origin refs/heads/main` のSHAを比較する。
+1. pushは利用者の明示許可または対象repositoryの明示規則がある場合だけ行う。
+2. 確定したremoteとbranchへpushする。通常開発のbranchを推測しない。
+3. dirty状態のpush、force push、rebase、履歴書換えを行わない。
+4. push失敗時は認証、remote、network、non-fast-forwardを切り分ける。remote先行や分岐の場合に自動pull、merge、rebase、resetを行わない。
+5. `git rev-parse HEAD`とremote tracking refまたは`git ls-remote`のSHAを比較する。
 6. SHA不一致は未完了とする。
-7. `git status --short --branch` で今回差分が残っていないことを確認する。
+7. `git status --short --branch`で今回の差分が残っていないことを確認する。既存差分はそのまま残す。
 
-## 終了通知
+## 終了
 
-実装、`AGENTS.md`、skill変更の終了時は、現在ユーザーのprofile配下 `.codex/runtime/agent_event_end.md` をUTF-8、LF、末尾改行あり、自然文3行で上書きする。
-
-- 1行目は作業要約。
-- 2行目は主対応。
-- 3行目は確認結果と完了または未完了状態。
-- 見出し、箇条書き、file名、path、command名を書かない。
-
-通知fileの書込みに失敗した場合は親directory作成後に一度だけ再試行し、変更結果と分けて報告する。
-
-## 禁止
-
-- 利用者がcommitまたはpushの省略を求めた状態でfileを変更しない。読み取り結果か変更案だけを返す。
-- `main` 以外で通常開発を続行しない。
-- `git add -A` をpath指定なしで実行しない。
-- `git reset`、`git restore`、`git clean`、`git rebase`、force push、履歴書換えを行わない。
-- 同じrepositoryの未push作業を複数端末で並行しない。
+- commitまたはpushが完了しない場合は成功と表現せず、現在のcommit状態と必要な次操作を書く。
+- 通知fileが必要な環境では、実行器が指定するtask固有の方法を使い、固定共有fileを上書きしない。

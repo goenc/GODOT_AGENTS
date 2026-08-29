@@ -2,6 +2,8 @@
 
 ## 適用順
 
+システム、プラットフォーム、開発者の指示を最上位とする。以下は、それらに反しない範囲で適用する。
+
 1. 利用者の明示指示
 2. 対象リポジトリ内で作業場所に最も近い `AGENTS.md`
 3. この共通規則
@@ -17,23 +19,21 @@
 - scriptだけでなく、要求に必要なscene、resource、animation、collision、project設定も変更してよい。
 - source、scene、resource、project設定を現在状態の正本とし、過去の説明や調査資料より優先する。
 
-## GitHub正本運用
+## Git運用
 
-- GitHubの `origin/main` を共有済み状態の唯一の正本とし、各PCのlocal repositoryは作業用copyとして扱う。
-- 通常開発では `main` だけを使用する。feature branch、task branch、端末別branch、Codex専用branchは作らない。
-- 別端末へ引き継げるのは、今回変更のcommit、`git push origin main`、localとremoteのSHA照合が完了した状態だけとする。
-- 同じrepositoryを複数端末で同時編集しない。一方の端末でpushとSHA照合を終えてから、他方でfetchとfast-forward更新を行う。
-- Git管理対象を変更する作業では `repository-change-workflow` skillを使用する。
-- commitまたはpushを省略する条件ではファイルを変更せず、調査結果か変更案だけを返す。
+- remote、branch、正本は対象repositoryの明示規則と利用者の依頼から確定する。`origin/main`や`main`を推測で固定しない。
+- commit、push、network、workspace外writeは、現在taskで必要かつ利用者が明示的に許可した場合だけ行う。
+- 同じrepositoryの既存変更を破棄、隠蔽、上書きしない。複数端末の未push作業を並行しない。
+- Git管理対象を変更する作業では、利用可能な `repository-change-workflow` skillを使用する。
 
 ## Skill運用
 
-- repo skillは `.agents/skills/<skill-name>/SKILL.md` に配置する。
-- Git管理対象の追加、変更、移動、削除には `repository-change-workflow` を使用する。
+- 共通skillの原本は、このAGENTS repositoryの `.agents/skills` に置く。実行時は登録済みskillを正本とし、同名skillを複数場所で独立管理しない。
 - Godot projectのscript、scene、resource、UI、physics、TileMapLayer、project設定、import、test、buildを扱う場合は `godot-project-workflow` も使用する。
+- GodotでC#または.NETを扱う場合は、Godot workflowに加えて `csharp-project-workflow` も使用する。
 - 各 `SKILL.md` を全文読んだ後、そのskillが現在のtaskに必要と指定するreferenceだけを読む。
 - 同じ作業中に同じskillやreferenceを理由なく再読しない。
-- skillが存在しない場合や読み込めない場合は、その事実を明示し、勝手に代替規則を作らない。
+- 必須skillが存在しない、または読み込めない場合は、その事実を明示し、規則を推測で補わない。
 
 ## 共通実装原則
 
@@ -64,7 +64,7 @@
 - project本体を変更した場合は、変更影響に合う最小のGodot import、構文確認、test、build、または実行確認が成功している。
 - UI、入力、window、描画、camera、game feelなどheadlessだけで判定できない変更は、安全な非headless確認を行う。実施できない場合は未確認条件を明示する。
 - `AGENTS.md` または `.agents/skills/` だけを変更した場合は、frontmatter、skill名、reference path、文面の矛盾、Git差分を確認する。
-- Git管理対象を変更した場合は、日本語commit、`origin/main` へのpush、remote SHA照合まで完了する。
+- commit、push、remote SHA照合は、利用者の明示許可または対象repositoryの明示規則がある場合だけ完了条件に含める。
 - 自動確認できない事項は、未確認理由と利用者側で必要な確認を明示する。
 
 ## 中間報告
