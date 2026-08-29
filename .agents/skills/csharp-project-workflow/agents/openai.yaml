@@ -1,0 +1,6 @@
+interface:
+  display_name: "C#プロジェクト開発"
+  short_description: "C#の既存構成を守って実装と検証を完了"
+  default_prompt: "$csharp-project-workflow を使い、このC#変更を既存構成に沿って実装・検証してください。"
+policy:
+  allow_implicit_invocation: true

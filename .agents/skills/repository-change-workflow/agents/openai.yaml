@@ -1,6 +1,6 @@
 interface:
   display_name: "GitHub正本の変更完了"
-  short_description: "Git変更を安全に検証しcommitとremote照合"
-  default_prompt: "$repository-change-workflow を使い、利用者が許可した範囲で変更を検証し、日本語commitと必要なremote照合まで完了する。"
+  short_description: "GitHub同期から日本語commit・push・SHA照合まで完了"
+  default_prompt: "$repository-change-workflow を使い、GitHub正本との開始前同期、手動投入fileの保全、変更検証、日本語commit、push、remote SHA照合まで完了する。"
 policy:
   allow_implicit_invocation: true

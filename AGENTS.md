@@ -21,14 +21,16 @@
 
 ## Git運用
 
-- remote、branch、正本は対象repositoryの明示規則と利用者の依頼から確定する。`origin/main`や`main`を推測で固定しない。
-- commit、push、network、workspace外writeは、現在taskで必要かつ利用者が明示的に許可した場合だけ行う。
-- 同じrepositoryの既存変更を破棄、隠蔽、上書きしない。複数端末の未push作業を並行しない。
-- Git管理対象を変更する作業では、利用可能な `repository-change-workflow` skillを使用する。
+- GitHubのupstream branchをrepositoryの正本とする。remote URL、current branch、upstreamを確認し、`origin/main`や`main`を推測で固定しない。
+- Git管理対象を変更する作業では `repository-change-workflow` を使用し、taskの編集前にGitHubから同期する。
+- Git管理対象に変更があるtaskは、検証の成功、失敗、未確認にかかわらず、日本語commit、GitHubへのpush、remote SHA照合まで完了する。空commitは作らない。
+- 手動投入file、未追跡file、既存差分は破棄せず、安全性と役割を確認してtask変更と分けて保全する。secret、未解決conflict、GitHub制限超過はcommitしない。
+- GitHubとのfetch、pull、通常pushと、それに必要なcommitは、この規則により追加確認なしで実行する。force pushとpush済み履歴の書換えは行わない。
+- 複数端末の未push作業を並行しない。開始時とpush直前にGitHubの先行を確認する。
 
 ## Skill運用
 
-- 共通skillの原本は、このAGENTS repositoryの `.agents/skills` に置く。実行時は登録済みskillを正本とし、同名skillを複数場所で独立管理しない。
+- 共通skillのGitHub原本は、このAGENTS repositoryの `.agents/skills` に置く。登録済みskillは実行用copyとし、原本変更後に同内容へ同期する。登録先だけを独立編集しない。
 - Godot projectのscript、scene、resource、UI、physics、TileMapLayer、project設定、import、test、buildを扱う場合は `godot-project-workflow` も使用する。
 - GodotでC#または.NETを扱う場合は、Godot workflowに加えて `csharp-project-workflow` も使用する。
 - 各 `SKILL.md` を全文読んだ後、そのskillが現在のtaskに必要と指定するreferenceだけを読む。
@@ -56,15 +58,15 @@
 
 - secret、token、password、connection string、signing key、certificate、個人情報を生成、表示、変更、commitしない。
 - `.env` やcredential保管場所を、要求上の必要性と明示的許可なしに読まない。
-- dependency、addon、MCP、network access、deploy、release、publish、workspace外writeは、現在taskに必要で利用者が許可した場合だけ行う。
-- `reset --hard`、`clean`、force push、履歴書換えを行わない。
+- dependency、addon、MCP、deploy、release、publish、GitHub同期以外のnetwork access、workspace外writeは、現在taskに必要で利用者が許可した場合だけ行う。共通skill原本の変更時は登録先copyの同期を許可する。
+- `reset --hard`、`clean`、force push、push済み履歴の書換えを行わない。
 
 ## 完了条件
 
-- project本体を変更した場合は、変更影響に合う最小のGodot import、構文確認、test、build、または実行確認が成功している。
+- project本体を変更した場合は、変更影響に合う最小のGodot import、構文確認、test、build、または実行確認を行い、成功、失敗、未確認を記録する。
 - UI、入力、window、描画、camera、game feelなどheadlessだけで判定できない変更は、安全な非headless確認を行う。実施できない場合は未確認条件を明示する。
 - `AGENTS.md` または `.agents/skills/` だけを変更した場合は、frontmatter、skill名、reference path、文面の矛盾、Git差分を確認する。
-- commit、push、remote SHA照合は、利用者の明示許可または対象repositoryの明示規則がある場合だけ完了条件に含める。
+- Git管理対象に変更がある場合は、検証結果にかかわらずcommit、push、remote SHA照合を完了条件に含める。
 - 自動確認できない事項は、未確認理由と利用者側で必要な確認を明示する。
 
 ## 中間報告
