@@ -12,7 +12,8 @@ Godot Editorで人間が調整できる構成を維持し、要求を満たす�
 1. 対象repositoryとGodot project rootを特定する。
 2. 最も近い `AGENTS.md`、`project.godot`、既存の実行・test手順を確認する。
 3. projectが使用するGodot major/minor、主言語、main scene、既存folder構成を確定する。
-4. 変更対象と直接依存だけを調べ、project全体を無目的に読み込まない。
+4. project本体を扱う場合は [editor-mcp.md](references/editor-mcp.md) を読み、導入済み `godot_editor` を必ず使用する。未起動なら既存設定に従い起動・再接続する。この手順は共通AGENTSが別repositoryで読み込まれない場合も適用する。
+5. 変更対象と直接依存だけを調べ、要求に対応する受入条件と確認方法を決める。説明・調査だけなら実装へ進まない。
 
 Godot versionは既存projectの宣言と実測を優先する。別目的のtaskでmajor/minorを更新しない。新規projectでversion指定がない場合だけ、公式release情報を確認してstable版を提案する。
 
@@ -34,7 +35,7 @@ Godot versionは既存projectの宣言と実測を優先する。別目的のtas
 - 既存scene、node、resource、script、test、Godot built-in APIを優先して再利用する。
 - node名、NodePath、親子構造、外部resource参照、main scene、公開APIは、要求上必要でない限り維持する。
 - sceneやInspectorが正本の調整値をscriptの固定代入で上書きしない。
-- 新しいdependency、addon、autoload、singleton、base class、utility、framework、MCP、editor plugin、外部serviceは、現在の受入条件に必須の場合だけ提案し、追加前に利用者の許可を得る。
+- 新しいdependency、addon、autoload、singleton、framework、MCP、editor plugin、外部serviceは、受入条件に必要で依頼範囲に含まれる場合だけ追加する。既に許可されていれば再確認しない。依頼範囲外の追加は必要性を示して許可を得る。既存方式に沿う局所的な補助関数・class・scene・resourceの追加は通常の実装として進める。
 - runtime生成、file編集、Editor操作のどれを使うかは、既存projectの方式と要求から選ぶ。Editorで調整するvisualやcollisionを、理由なくraw node生成へ置き換えない。
 - scene全体の再生成や無関係なformat変更を行わない。
 - 受入条件と必要な確認を満たしたら停止する。

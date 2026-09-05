@@ -14,6 +14,7 @@
 - MAUI: `UseMaui`、`Platforms/`、`MauiProgram.cs`、`AppShell.xaml`
 - ASP.NET Core: `Program.cs`、`appsettings.json`、middleware、Controllers、Pages、Razor
 - Unity: `Assets/`、`ProjectSettings/`、`.unity`、`.prefab`、`.asmdef`
+- Godot C#: `project.godot`、`Godot.NET.Sdk` を使う `.csproj`、`.tscn`。Godot workflowと併用する。
 - その他: Console、Class Library、Worker Service、test project を project file と entry point で判定する。
 
 ## 制約

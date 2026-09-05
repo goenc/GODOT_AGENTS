@@ -9,8 +9,9 @@ description: C#および.NETプロジェクトの構成特定、最小実装、�
 
 ## 必須の組合せ
 
-- ファイル変更を伴う場合は `repository-change-workflow` も使用する。
+- Git管理repositoryのファイル変更を伴う場合は `repository-change-workflow` も使用する。Git管理外の作業だけを理由にrepositoryを新設しない。
 - 読み取り専用の調査では、必要な C# 参照資料だけを使用する。
+- Godot C#では `godot-project-workflow` も使用する。Editor・MCP・scene・実行確認はGodot側、C#構文・SDK・依存復元・compileは本skillに従う。
 
 ## 参照資料の選択
 
@@ -29,4 +30,4 @@ description: C#および.NETプロジェクトの構成特定、最小実装、�
 2. 対象ファイル、直接依存、関連テストだけを先に確認する。
 3. 既存規約に沿う最小変更を行う。
 4. 変更影響に合う最小の検証を行う。
-5. ファイル変更がある場合は `repository-change-workflow` に従い、コミット、push、リモート照合まで完了する。
+5. Git管理repositoryのファイル変更がある場合は `repository-change-workflow` に従い、コミット、push、リモート照合まで完了する。

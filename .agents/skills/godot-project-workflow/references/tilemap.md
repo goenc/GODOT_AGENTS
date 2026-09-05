@@ -2,7 +2,7 @@
 
 ## 適用
 
-Godot 4系で、床、壁、天井、固定hazardなど静的grid地形をEditorから配置、編集、保存するtaskに適用する。
+床、壁、天井、固定hazardなど静的grid地形をEditorから配置、編集、保存するtaskに適用する。`TileMapLayer` の採用前に対象engine versionで利用できることを確認する。未対応なら既存の地形方式を維持し、これを理由にengineを更新しない。
 
 ## 規則
 

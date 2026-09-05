@@ -5,7 +5,7 @@
 ## Godot command
 
 - まずprojectが定義するcommand、tool、CI設定を確認する。
-- 定義がなければPATH上の `godot` を使用する。Windowsでconsole出力が必要で `godot_console` が用意されている場合は使用してよい。
+- 定義がなければPATH上の `godot` を確認する。見つからなければMCPの接続情報や対象Editor processから実行binaryを特定する。Windowsでconsole出力が必要で `godot_console` が用意されている場合は使用してよい。
 - 毎回の再帰探索、候補path総当たり、machine固有pathのcommitを行わない。
 - commandが見つからない場合は推測で別binaryを実行せず、未確認として報告する。
 
@@ -13,6 +13,7 @@
 
 - `project.godot` のfeature宣言、既存CI、project文書、`godot --version` から対象versionを確定する。
 - projectのmajor/minorと異なるeditorで自動importやscene保存を行わない。
+- Godot C#では対応する.NET版Editorとproject指定の.NET SDKを使い、C# buildも確認する。`dotnet run` をGodotの実行確認の代用にしない。
 - unrelated taskでengine versionやproject formatを更新しない。
 
 ## 確認候補
@@ -32,11 +33,11 @@ godot --headless --path . --script res://PATH/TO/SCRIPT.gd --check-only
 - repository固有test runnerがある場合は、変更に関係する最小suiteを実行する。
 - exportはtaskがbuild、配布物、export設定を対象にする場合だけ行う。既存presetとexport templateを使用する。
 - UI、入力、window、描画、camera、animation、game feelは、headless確認に加えてboundedな非headless smoke testを行う。
-- GUI操作を自動化する必要はない。CLI、log、test、timeout付き起動で確認できないvisual事項は未確認として利用者へ渡す。
+- MCPで可能な画面取得、入力、scene実行を優先して対象の表示・操作を確認する。必要なら利用可能なGUI操作手段で補う。確認できないvisual事項だけを理由付きで未確認とする。
 
 ## 判定
 
 - commandのexit codeとerror outputを確認する。
 - parseまたはimport成功だけでruntime behavior、visual、inputを確認済みとしない。
 - 失敗時は最初の主要原因を切り分け、対象箇所だけを修正して同じ確認を再実行する。
-- 同じ原因で修正loopが続く場合は権限や範囲を広げず停止して報告する。
+- 同じ原因で修正が続く場合は新しい証拠や別の確認方法へ切り替える。解消に利用者判断や範囲外の変更が必要なら該当確認だけ保留し、独立した作業を続ける。

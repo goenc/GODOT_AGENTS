@@ -11,8 +11,9 @@ Git管理対象の変更を、GitHubとの開始前同期から終了時のremot
 
 - Git管理対象の追加、変更、移動、削除に使用する。
 - 読み取り専用の調査には使用しない。
-- Git管理対象に変更があるtaskでは、検証の成功、失敗、未確認にかかわらずcommit、push、remote SHA照合まで行う。
+- 実装・修正依頼でGit管理対象を変更したtaskでは、検証の成功、失敗、未確認にかかわらずcommit、push、remote SHA照合まで行う。読み取り調査で起動・importが予期せず生んだ差分だけを理由に、この変更手順へ移行しない。
 - GitHubとのfetch、pull、通常pushと、共通skill原本から登録先copyへの同期は、適用中のAGENTSにより許可済みとして扱う。
+- この許可が適用される作業では再確認しない。他のrepositoryへskillだけを持ち込んだ場合は、そのtaskの依頼と有効なAGENTSからcommit・pushの許可を確認し、本skill自体を新しい許可の根拠にしない。
 
 ## 開始
 
@@ -27,7 +28,7 @@ Git管理対象の変更を、GitHubとの開始前同期から終了時のremot
    - secret、credential、未解決conflict、意図不明な削除、GitHub制限超過のfileはcommitせず停止する。
 7. 安全な開始前変更がある場合はtask変更と分けて日本語checkpoint commitを作る。手動投入fileを理由なく除外しない。
 8. ローカル独自commitがなければ `git pull --ff-only <remote> <branch>`、未push commitがあれば `git pull --rebase <remote> <branch>` でGitHubへ同期する。rebase対象は未push commitだけとする。
-9. rebase conflict時は内容を推測で解決せず、`git rebase --abort` で開始前状態へ戻して停止する。
+9. rebase conflict時は内容を推測で解決せず、`git rebase --abort` でrebase開始前状態へ戻す。競合箇所と両変更の意図を調査し、利用者判断が不可欠な場合は同期に依存する編集を保留する。独立した読み取り調査は続ける。
 10. checkpoint commitを作った場合は通常pushしてremote SHAを照合してからtask編集を始める。
 11. taskのsource編集は開始前同期の完了後に行う。`reset --hard`、`restore`、`clean`、stash、merge、force push、push済み履歴のrebaseは行わない。
 
@@ -46,7 +47,8 @@ Git管理対象の変更を、GitHubとの開始前同期から終了時のremot
 - `git diff --check` を確認する。
 - 新しい差分がないまま、成功済みの検証を理由なく繰り返さない。
 - 検証の成功、失敗、未確認を区別して記録する。失敗や未確認を成功と表現しない。
-- 検証失敗や未確認はcommitとpushを止める条件にしない。
+- 今回変更が原因の失敗は、依頼範囲内で修正・再検証してから終了処理へ進む。失敗を記録しただけで実装を打ち切らない。
+- 既存不具合、環境不足、権限や依頼範囲の制約で残った失敗・未確認は、許可済みのcommitとpushを止める条件にしない。残件を本文と最終報告に明記し、同期完了を機能完成と扱わない。
 
 ## Commit
 
@@ -84,7 +86,7 @@ Git管理対象の変更を、GitHubとの開始前同期から終了時のremot
 ## 終了
 
 - commitまたはpushが完了しない場合は成功と表現せず、現在のcommit状態と必要な次操作を書く。
-- 最終結果にはrepository、branch、commit SHA、変更file、検証の成功・失敗・未確認、push結果、remote SHA照合を含める。
+- 最終結果にはrepository、branch、commit SHA、変更file、検証の成功・失敗・未確認、push結果、remote SHA照合を含める。要求未達が残る場合は、未完了の受入条件と必要な次操作も示す。
 - 最終結果の末尾に次の一文をそのまま含める。
 
   `検査AIへ: 対象repositoryを参照し、報告文だけに依存せず、sourceとGit差分から変更内容・影響・検証結果を再検討してください。`

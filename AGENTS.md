@@ -12,6 +12,8 @@
 
 具体的な指示を優先する。完了条件、安全性、変更範囲が衝突し、根拠から解消できない場合は推測で進めず停止する。
 
+このrepositoryは共通規則とskillの原本を管理する。別repositoryで本書が自動的に読まれるとは扱わず、対象の有効な `AGENTS.md` と発動した登録済みskillを確認する。
+
 ## 役割
 
 - Godot projectの機能追加、修正、調査を、要求を満たす最小変更で完了する。
@@ -19,11 +21,19 @@
 - scriptだけでなく、要求に必要なscene、resource、animation、collision、project設定も変更してよい。
 - source、scene、resource、project設定を現在状態の正本とし、過去の説明や調査資料より優先する。
 
+## 作業の進め方
+
+- 説明、調査、reviewだけの依頼は読み取り専用。導入済みMCP・対象Editorの起動と再接続は行ってよいが、projectの永続設定は変更しない。修正の依頼または追加許可があれば実装へ進む。
+- 変更前に要求を短い受入条件へ落とし、対象と確認方法を決める。複数項目は未着手、実装済み、検証済み、未確認を区別し、計画だけで終了しない。
+- 許可済みの範囲内にある通常の実装、調査、検証、復旧は再確認せず進める。既存方式に沿う小さな補助関数やscene、resourceの追加は通常の実装に含む。
+- 失敗時は原因を示す証拠を取り、関係する最小箇所を直して再確認する。同じ操作を条件不変で反復しない。安全な別手段があれば続け、利用者判断が不可欠な操作だけ保留する。
+- 既定の利用想定は `gpt-5.6-luna`、推論設定 `max`。これは運用上の前提であり、実行中のmodelや設定を変更する指示ではない。難易度を理由に無断でmodelを切り替えない。
+
 ## Git運用
 
 - GitHubのupstream branchをrepositoryの正本とする。remote URL、current branch、upstreamを確認し、`origin/main`や`main`を推測で固定しない。
 - Git管理対象を変更する作業では `repository-change-workflow` を使用し、taskの編集前にGitHubから同期する。
-- Git管理対象に変更があるtaskは、検証の成功、失敗、未確認にかかわらず、日本語commit、GitHubへのpush、remote SHA照合まで完了する。空commitは作らない。
+- 実装・修正依頼でGit管理対象を変更したtaskは、検証の成功、失敗、未確認にかかわらず、日本語commit、GitHubへのpush、remote SHA照合まで完了する。空commitは作らない。調査時の起動・importで予期せず生じた差分は報告し、それだけを根拠にcommit・pushしない。
 - 手動投入file、未追跡file、既存差分は破棄せず、安全性と役割を確認してtask変更と分けて保全する。secret、未解決conflict、GitHub制限超過はcommitしない。
 - GitHubとのfetch、pull、通常pushと、それに必要なcommitは、この規則により追加確認なしで実行する。force pushとpush済み履歴の書換えは行わない。
 - 複数端末の未push作業を並行しない。開始時とpush直前にGitHubの先行を確認する。
@@ -31,6 +41,7 @@
 ## Skill運用
 
 - 共通skillのGitHub原本は、このAGENTS repositoryの `.agents/skills` に置く。登録済みskillは実行用copyとし、原本変更後に同内容へ同期する。登録先だけを独立編集しない。
+- 同期先は利用可能なskill一覧の実pathから特定し、原本と同じpathは除外する。同期前に独自差分を確認し、同期後にfile一覧とhashを照合する。別端末のpathを推測で固定しない。
 - Godot projectのscript、scene、resource、UI、physics、TileMapLayer、project設定、import、test、buildを扱う場合は `godot-project-workflow` も使用する。
 - GodotでC#または.NETを扱う場合は、Godot workflowに加えて `csharp-project-workflow` も使用する。
 - 各 `SKILL.md` を全文読んだ後、そのskillが現在のtaskに必要と指定するreferenceだけを読む。
@@ -48,13 +59,9 @@
 - プラグインフォルダ: `addons/godot_mcp`
 - 導入時バージョン: `2026.09.02`
 
-1. Godot project本体の調査、実装、Editor操作、実行確認では、導入済みの `godot_editor` を必ず使用する。開始時に利用可能なMCP toolを検索・確認し、読み取り専用toolを実際に呼び出して、接続成功と対象projectの一致を確認する。tool一覧の存在だけで使用済みと扱わない。AGENTSやskill文書だけの変更、Gitだけの操作ではEditor起動を要求しない。
-2. MCPサーバーが未起動、または接続できない場合は、その時点で作業を打ち切らず、既存の登録設定、実行コマンドの所在、関連process、接続先、必要なlogを確認して原因を切り分ける。secretを表示せず、既存processを重複起動しない。
-3. 未起動を確認したら、既存の `godot_editor` 登録設定と導入済みの起動方式に従い、`godot-editor-mcp` を起動する。引数、port、transportは実設定に従い、推測で固定しない。stdio方式ではMCP clientがprocessを起動・管理する接続手順を使う。独立常駐方式では既存の起動手順を使い、Windowsのbackground helperは非表示で起動する。
-4. サーバー接続に対象Godot Editorと `Godot MCP` が必要な場合は、対象の `project.godot` と `addons/godot_mcp` を確認し、既存Editorの利用、未起動Editorの起動、導入済みプラグインの有効化を必要に応じて行う。別projectや未保存のEditor作業を巻き込まない。
-5. この規則により、対象taskに必要な導入済みMCPの起動・再接続、対象Editorの起動、導入済みプラグインの有効化、既存設定に基づくローカル接続を許可する。これらについて利用者へ同じ許可を取り直さず、実行まで進める。新規導入、更新、再インストール、接続先の変更はこの許可に含めない。
-6. 起動または復旧後は、MCPの読み取り専用toolを再度呼び出し、対象projectから正常応答を得てから本体作業へ進む。利用可能なMCP機能を対象taskの調査・操作・検証に使用し、実施した操作と結果を記録する。
-7. 復旧できない場合は、起動失敗、接続失敗、tool未公開などの事実と実施済みの復旧手順を明示する。失敗した同一操作を無限反復せず、権限内の別の復旧手段とMCPに依存しない安全な作業を継続する。MCP使用やEditor確認を未実施のまま成功と報告しない。利用者操作が不可欠な場合だけ、具体的な残作業を報告する。
+- Godot project本体の作業では `godot_editor` を必ず使用し、読み取り専用toolの正常応答と対象projectの一致を確認する。tool一覧の存在だけで使用済みとしない。文書だけの変更やGitだけの操作ではEditor起動を要求しない。
+- 未起動なら既存設定に従いサーバーを起動する。必要な対象Editor起動、再接続、ローカル接続は許可済みとし、再確認せず実施する。導入済みプラグインの有効化で永続設定が変わる場合は、実装依頼の範囲内で行う。
+- 接続確認、起動、復旧、保存確認の詳細は、`godot-project-workflow` の [editor-mcp.md](.agents/skills/godot-project-workflow/references/editor-mcp.md) に従う。復旧失敗時はMCP依存操作だけ保留し、安全な独立作業を続ける。未接続を成功と報告しない。
 
 ## 共通実装原則
 
@@ -78,6 +85,7 @@
 - secret、token、password、connection string、signing key、certificate、個人情報を生成、表示、変更、commitしない。
 - `.env` やcredential保管場所を、要求上の必要性と明示的許可なしに読まない。
 - dependency、addon、MCP、deploy、release、publish、GitHub同期以外のnetwork access、workspace外writeは、現在taskに必要で利用者が許可した場合だけ行う。共通skill原本の変更時は登録先copyの同期を許可する。
+- 対象taskに必要な公開一次資料の閲覧、既存設定に従う依存復元、通常のbuild/importに伴うcache生成は許可済みの検証・調査に含む。機密sourceの外部送信、新規serviceの契約、依存versionの更新へ拡張しない。
 - `reset --hard`、`clean`、force push、push済み履歴の書換えを行わない。
 
 ## 完了条件
@@ -85,8 +93,9 @@
 - project本体を変更した場合は、変更影響に合う最小のGodot import、構文確認、test、build、または実行確認を行い、成功、失敗、未確認を記録する。
 - UI、入力、window、描画、camera、game feelなどheadlessだけで判定できない変更は、安全な非headless確認を行う。実施できない場合は未確認条件を明示する。
 - `AGENTS.md` または `.agents/skills/` だけを変更した場合は、frontmatter、skill名、reference path、文面の矛盾、Git差分を確認する。
-- Git管理対象に変更がある場合は、検証結果にかかわらずcommit、push、remote SHA照合を完了条件に含める。
+- 実装・修正依頼でGit管理対象を変更した場合は、検証結果にかかわらずcommit、push、remote SHA照合を完了条件に含める。
 - 自動確認できない事項は、未確認理由と利用者側で必要な確認を明示する。
+- 各受入条件を実測結果と照合する。commit・push済みでも要求未達や検証失敗が残れば作業完了と扱わず、保存・同期の完了と機能の完成を分けて報告する。
 
 ## 中間報告
 

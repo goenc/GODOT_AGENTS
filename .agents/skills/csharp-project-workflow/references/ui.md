@@ -41,4 +41,4 @@
 ## 確認
 
 - UI 変更後は build、XAML compile、resource resolve、binding 参照を確認する。
-- GUI 操作が必要な表示確認は未確認として明示する。
+- 表示・入力は利用可能なMCP、test、GUI操作手段で確認する。実施できない項目だけ理由付きで未確認とする。
