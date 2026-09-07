@@ -12,7 +12,7 @@
 
 具体的な指示を優先する。完了条件、安全性、変更範囲が衝突し、根拠から解消できない場合は推測で進めず停止する。
 
-このrepositoryは共通規則とskillの原本を管理する。別repositoryで本書が自動的に読まれるとは扱わず、対象の有効な `AGENTS.md` と発動した登録済みskillを確認する。
+共通規則とskillの原本はAGENTS repositoryで管理する。別repositoryで本書が自動的に読まれるとは扱わず、対象の有効な `AGENTS.md` と発動した登録済みskillを確認する。
 
 ## 役割
 
@@ -61,7 +61,17 @@
 
 - Godot project本体の作業では `godot_editor` を必ず使用し、読み取り専用toolの正常応答と対象projectの一致を確認する。tool一覧の存在だけで使用済みとしない。文書だけの変更やGitだけの操作ではEditor起動を要求しない。
 - 未起動なら既存設定に従いサーバーを起動する。必要な対象Editor起動、再接続、ローカル接続は許可済みとし、再確認せず実施する。導入済みプラグインの有効化で永続設定が変わる場合は、実装依頼の範囲内で行う。
-- 接続確認、起動、復旧、保存確認の詳細は、`godot-project-workflow` の [editor-mcp.md](.agents/skills/godot-project-workflow/references/editor-mcp.md) に従う。復旧失敗時はMCP依存操作だけ保留し、安全な独立作業を続ける。未接続を成功と報告しない。
+- 接続確認、起動、復旧、保存確認の詳細は、`godot-project-workflow` の [editor-mcp.md](../AGENTS/.agents/skills/godot-project-workflow/references/editor-mcp.md) に従う。復旧失敗時はMCP依存操作だけ保留し、安全な独立作業を続ける。未接続を成功と報告しない。
+
+### 共有サーバーを使う端末
+
+- 最初にその端末の `godot_editor` 登録がcommand方式かHTTP URL方式かを確認する。別端末にも同じ常駐設定があるとは推測しない。
+- HTTP URL登録の端末では全taskが1つのローカル共有サーバーへ接続する。taskごとにstdioサーバーを追加起動したり、空きportへ自動変更したりしない。停止時は導入済みの二重起動防止付きlauncherで復旧する。
+- 共有構成の標準はCodex接続先 `http://127.0.0.1:9090/mcp`、Editor bridge `ws://127.0.0.1:9080`。実際の登録を優先し、両portを同じサーバーprocessが所有することを確認する。外部公開せずloopbackに限定する。
+- `godot_get_server_info`、`godot_list_toolsets`、`godot_inspection_get_project_info`で接続とproject絶対pathを確認する。必要なtoolsetは実在する `godot_enable_toolset` で有効にし、tool一覧を再取得する。Codexの許可tool一覧からこの切替toolや必要なruntime/input toolを除外しない。
+- 複数taskの接続は共有できるが、Editorの変更・実行・入力操作は同時に行わない。別projectのEditorや他taskのplay sessionを無断で閉じたり操作したりしない。projectが一致しない場合はMCP変更操作を保留する。
+- 操作確認はMCP経由の起動、入力の押下・解除、runtimeの座標変化と入力受信、テストで起動したplay sessionの停止で判定する。既存play sessionと、利用者が起動継続を指定したgameは停止しない。
+- Codexの接続設定を変更した場合、既存taskのtoolが旧接続を保持することがある。共有HTTPへの直接確認と、このtaskに公開されたtoolからの確認を区別し、後者に再接続・Codex再起動が必要なら明示する。ユーザー作業中のCodexを自動終了しない。
 
 ## 共通実装原則
 
