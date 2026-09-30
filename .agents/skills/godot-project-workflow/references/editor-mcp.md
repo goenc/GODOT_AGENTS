@@ -26,3 +26,28 @@ Godot project本体の調査・実装・Editor操作・実行確認では `godot
 - 説明・調査だけの依頼ではsceneや永続設定を変更しない。接続にプラグイン設定変更が必要ならMCP依存部分だけ保留し、local調査を続ける。起動・importが予期せず追跡fileを変えた場合は差分を報告し、調査依頼だけを根拠にcommit・pushしない。
 - Editorでの変更後は、対象だけを保存してdisk上のscene・resource・scriptとGit差分を確認する。toolの成功応答だけで永続化・動作確認済みとしない。既存の未保存編集が混在する場合は一括保存しない。
 - 実際に呼び出したtool、対象project、正常応答、関連する検証結果を簡潔に記録する。
+
+## Godot MCPの必須使用と自動起動
+
+導入済みMCPの識別情報は以下とする。バージョンは利用者申告の導入時情報であり、作業時は実環境も確認する。
+
+- Codex側の登録名: `godot_editor`
+- MCPサーバー名: `godot-mcp`
+- 実行コマンド: `godot-editor-mcp`
+- Godotプラグイン名: `Godot MCP`
+- プラグインフォルダ: `addons/godot_mcp`
+- 導入時バージョン: `2026.09.02`
+
+- Godot project本体の作業では `godot_editor` を必ず使用し、読み取り専用toolの正常応答と対象projectの一致を確認する。tool一覧の存在だけで使用済みとしない。文書だけの変更やGitだけの操作ではEditor起動を要求しない。
+- 未起動なら既存設定に従いサーバーを起動する。必要な対象Editor起動、再接続、ローカル接続は許可済みとし、再確認せず実施する。導入済みプラグインの有効化で永続設定が変わる場合は、実装依頼の範囲内で行う。
+- 接続確認、起動、復旧、保存確認の詳細は、本書の接続と起動・復旧・作業と確認の節に従う。復旧失敗時はMCP依存操作だけ保留し、安全な独立作業を続ける。未接続を成功と報告しない。
+
+### 共有サーバーを使う端末
+
+- 最初にその端末の `godot_editor` 登録がcommand方式かHTTP URL方式かを確認する。別端末にも同じ常駐設定があるとは推測しない。
+- HTTP URL登録の端末では全taskが1つのローカル共有サーバーへ接続する。taskごとにstdioサーバーを追加起動したり、空きportへ自動変更したりしない。停止時は導入済みの二重起動防止付きlauncherで復旧する。
+- 共有構成の標準はCodex接続先 `http://127.0.0.1:9090/mcp`、Editor bridge `ws://127.0.0.1:9080`。実際の登録を優先し、両portを同じサーバーprocessが所有することを確認する。外部公開せずloopbackに限定する。
+- `godot_get_server_info`、`godot_list_toolsets`、`godot_inspection_get_project_info`で接続とproject絶対pathを確認する。必要なtoolsetは実在する `godot_enable_toolset` で有効にし、tool一覧を再取得する。Codexの許可tool一覧からこの切替toolや必要なruntime/input toolを除外しない。
+- 複数taskの接続は共有できるが、Editorの変更・実行・入力操作は同時に行わない。別projectのEditorや他taskのplay sessionを無断で閉じたり操作したりしない。projectが一致しない場合はMCP変更操作を保留する。
+- 操作確認はMCP経由の起動、入力の押下・解除、runtimeの座標変化と入力受信、テストで起動したplay sessionの停止で判定する。既存play sessionと、利用者が起動継続を指定したgameは停止しない。
+- Codexの接続設定を変更した場合、既存taskのtoolが旧接続を保持することがある。共有HTTPへの直接確認と、このtaskに公開されたtoolからの確認を区別し、後者に再接続・Codex再起動が必要なら明示する。ユーザー作業中のCodexを自動終了しない。

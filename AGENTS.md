@@ -27,7 +27,18 @@
 - 変更前に要求を短い受入条件へ落とし、対象と確認方法を決める。複数項目は未着手、実装済み、検証済み、未確認を区別し、計画だけで終了しない。
 - 許可済みの範囲内にある通常の実装、調査、検証、復旧は再確認せず進める。既存方式に沿う小さな補助関数やscene、resourceの追加は通常の実装に含む。
 - 失敗時は原因を示す証拠を取り、関係する最小箇所を直して再確認する。同じ操作を条件不変で反復しない。安全な別手段があれば続け、利用者判断が不可欠な操作だけ保留する。
-- 既定の利用想定は `gpt-5.6-luna`、推論設定 `max`。これは運用上の前提であり、実行中のmodelや設定を変更する指示ではない。難易度を理由に無断でmodelを切り替えない。
+
+## モデル・使用量・キャッシュ
+
+- 利用者が選択したmodel・推論設定を優先する。本書だけで実設定は変更されない。切替が必要なら理由と推奨設定を示し、無断で変更しない。
+- 明確な局所修正や既存方式に沿う実装は `gpt-6-luna` / `max`、設計判断や複数責務の調整は `gpt-6.1-sol` / `medium`、原因不明の障害や難しい状態・並行処理はSol / `high` を第一候補とする。Solのmax・xhighは効果を確認できる難題に限定する。
+- 通常は親agentだけで完了する。独立作業の利益が追加使用量を上回る場合だけsubagentを1体まで使う。両modelに同じ課題を毎回解かせず、切替時は目的・再現条件・実施済み確認・残件だけ引き継ぐ。
+- 調査は対象fileと直接依存から始め、必要時だけ広げる。独立した読取はまとめ、全repository・logの走査、同じ文書の再読、成功済み検証の反復を避ける。
+- 長時間作業の開始時や残量警告時に、公開されている使用量を一度確認する。残り20%以下は任意の追加調査・review・並列化を抑える目安とし、必要な実装・検証・Git同期は完了する。残量不明なら推測しない。
+- 固定指示・skill・tool定義の内容と順序を安定させ、時刻・残量・進捗等は後続メッセージへ置く。同じ開発作業は既存チャットで継続し、取得済み資料は変更と鮮度を確認して再利用する。
+- Godot import・.NET依存・増分buildの既存cacheを優先する。変更に必要な再import・build・testは行い、古い成果物を現在の検証結果と扱わない。破損等の証拠なしにcache削除や全再生成を行わない。
+- cache目的の定期request、不要な読込・長文の追加は行わない。実際のprompt cacheはCodex実行基盤が管理し、ヒットやPlusの5時間枠の削減は保証できない。API用cache設定を未確認のCodex設定へ転用しない。
+- 詳しい選択・計測方針は [MODEL_USAGE.md](MODEL_USAGE.md) を運用調整時だけ読む。必要な精度と確認を守り、使用量を減らすために検証を省略しない。
 
 ## Git運用
 
@@ -48,30 +59,11 @@
 - 同じ作業中に同じskillやreferenceを理由なく再読しない。
 - 必須skillが存在しない、または読み込めない場合は、その事実を明示し、規則を推測で補わない。
 
-## Godot MCPの必須使用と自動起動
+## Godot MCP
 
-導入済みMCPの識別情報は以下とする。バージョンは利用者申告の導入時情報であり、作業時は実環境も確認する。
-
-- Codex側の登録名: `godot_editor`
-- MCPサーバー名: `godot-mcp`
-- 実行コマンド: `godot-editor-mcp`
-- Godotプラグイン名: `Godot MCP`
-- プラグインフォルダ: `addons/godot_mcp`
-- 導入時バージョン: `2026.09.02`
-
-- Godot project本体の作業では `godot_editor` を必ず使用し、読み取り専用toolの正常応答と対象projectの一致を確認する。tool一覧の存在だけで使用済みとしない。文書だけの変更やGitだけの操作ではEditor起動を要求しない。
-- 未起動なら既存設定に従いサーバーを起動する。必要な対象Editor起動、再接続、ローカル接続は許可済みとし、再確認せず実施する。導入済みプラグインの有効化で永続設定が変わる場合は、実装依頼の範囲内で行う。
-- 接続確認、起動、復旧、保存確認の詳細は、`godot-project-workflow` の [editor-mcp.md](../AGENTS/.agents/skills/godot-project-workflow/references/editor-mcp.md) に従う。復旧失敗時はMCP依存操作だけ保留し、安全な独立作業を続ける。未接続を成功と報告しない。
-
-### 共有サーバーを使う端末
-
-- 最初にその端末の `godot_editor` 登録がcommand方式かHTTP URL方式かを確認する。別端末にも同じ常駐設定があるとは推測しない。
-- HTTP URL登録の端末では全taskが1つのローカル共有サーバーへ接続する。taskごとにstdioサーバーを追加起動したり、空きportへ自動変更したりしない。停止時は導入済みの二重起動防止付きlauncherで復旧する。
-- 共有構成の標準はCodex接続先 `http://127.0.0.1:9090/mcp`、Editor bridge `ws://127.0.0.1:9080`。実際の登録を優先し、両portを同じサーバーprocessが所有することを確認する。外部公開せずloopbackに限定する。
-- `godot_get_server_info`、`godot_list_toolsets`、`godot_inspection_get_project_info`で接続とproject絶対pathを確認する。必要なtoolsetは実在する `godot_enable_toolset` で有効にし、tool一覧を再取得する。Codexの許可tool一覧からこの切替toolや必要なruntime/input toolを除外しない。
-- 複数taskの接続は共有できるが、Editorの変更・実行・入力操作は同時に行わない。別projectのEditorや他taskのplay sessionを無断で閉じたり操作したりしない。projectが一致しない場合はMCP変更操作を保留する。
-- 操作確認はMCP経由の起動、入力の押下・解除、runtimeの座標変化と入力受信、テストで起動したplay sessionの停止で判定する。既存play sessionと、利用者が起動継続を指定したgameは停止しない。
-- Codexの接続設定を変更した場合、既存taskのtoolが旧接続を保持することがある。共有HTTPへの直接確認と、このtaskに公開されたtoolからの確認を区別し、後者に再接続・Codex再起動が必要なら明示する。ユーザー作業中のCodexを自動終了しない。
+- Godot project本体の作業は導入済み `godot_editor` を必ず使用し、読み取り専用toolの正常応答と対象projectの一致を確認する。文書・Gitだけの変更ではEditorを起動しない。
+- 起動、復旧、共有サーバー、toolset、実行・入力・保存確認は [editor-mcp.md](.agents/skills/godot-project-workflow/references/editor-mcp.md) を必要時に読む。既存設定での起動・再接続は許可済み。別projectや他taskのplay sessionを操作しない。
+- 復旧失敗時はMCP依存操作だけ保留し、独立した安全な作業を続ける。未接続やtool一覧だけを使用成功と報告しない。
 
 ## 共通実装原則
 

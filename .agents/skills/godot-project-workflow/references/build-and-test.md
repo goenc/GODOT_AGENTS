@@ -16,6 +16,15 @@
 - Godot C#では対応する.NET版Editorとproject指定の.NET SDKを使い、C# buildも確認する。`dotnet run` をGodotの実行確認の代用にしない。
 - unrelated taskでengine versionやproject formatを更新しない。
 
+## import・build cache
+
+- 同じprojectと適合するengineで生成した既存import cacheを再利用する。Godot 4では `.godot/imported/` が対象。別majorのcache配置や互換性は推測しない。
+- source asset・import設定・engine条件が変わった場合は必要な再importを行い、現在のresourceが読めることを確認する。cacheの存在だけで検証成功と扱わない。
+- 通常作業で `.godot` を削除したり全assetを強制再importしたりしない。破損や不整合の証拠がある場合だけ原因に関係する対象へ復旧を限定する。
+- asset横の `.import` 設定や、対象versionで管理される `.uid` はcache削除の対象と混同しない。既存の追跡方針とresource参照を維持する。`.godot` の生成cacheを新たにcommitしない。
+- Godot C#では既存NuGet cacheと増分buildを使い、source・設定・依存変更に必要なbuildとtestを実行する。無条件のclean、依存再取得、旧binaryだけでの確認を行わない。
+- 成功済み確認は同じ入力条件なら再利用する。追加変更や新しい失敗があれば影響する確認だけ再実行する。
+
 ## 確認候補
 
 resource importが必要な場合:
